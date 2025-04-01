@@ -20,8 +20,9 @@ function saveLeaderboard() {
 
 // Envoyer un poisson aléatoire
 async function sendFish() {
-  const channelName = config.channels[Math.floor(Math.random() * config.channels.length)];
-  const channel = client.channels.cache.find((ch) => ch.name === channelName);
+  const channelId = config.channels[Math.floor(Math.random() * config.channels.length)];
+  const channel = client.channels.cache.get(channelId);
+
   
   if (!channel) return;
   
@@ -77,14 +78,14 @@ client.on("messageCreate", (message) => {
       .setDescription(explanation);
 
     // Envoyer le message d'explication dans #général
-    const generalChannel = message.guild.channels.cache.find(ch => ch.name === "général");
+    const generalChannel = message.guild.channels.cache.get("1164586303153782897");
     if (!generalChannel) return message.reply("Le salon #général n'existe pas.");
     generalChannel.send({ embeds: [embed] });
 
     // Démarrer le jeu (si ce n'est pas déjà fait)
     if (!gameStarted) {
       gameStarted = true;
-      fishInterval = setInterval(sendFish, 60000); // Un poisson toutes les 1 minute
+      fishInterval = setInterval(sendFish, 600000); // Un poisson toutes les 10 minutes ✅
     } else {
       message.channel.send("La chasse aux poissons a déjà commencé !");
     }
@@ -97,7 +98,7 @@ client.on("messageCreate", (message) => {
     
     // Reprendre l'intervalle normal après 10 minutes
     clearInterval(fishInterval);
-    fishInterval = setInterval(sendFish, 600000); // Un poisson toutes les 1 minute après l'apparition forcée
+    fishInterval = setInterval(sendFish, 600000); // Un poisson toutes les 10 minute après l'apparition forcée
     message.channel.send("🐟 Un poisson sauvage a été forcé d'apparaître ! Le jeu continue.");
   }
 
@@ -111,6 +112,7 @@ client.on("messageCreate", (message) => {
     // Créer le classement pour tout le monde
     let ranking = Object.entries(leaderboard)
       .sort((a, b) => b[1] - a[1])
+      .slice(0, 10) // On affiche seulement les 10 premiers
       .map(entry => `${entry[0]} - ${entry[1]} pts`)
       .join("\n");
 
